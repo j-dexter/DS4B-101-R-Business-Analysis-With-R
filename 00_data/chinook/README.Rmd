@@ -1,0 +1,57 @@
+---
+title: "Chinook SQLite Database"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The [Chinook SQLite Database](https://github.com/lerocha/chinook-database) represents a __digital media store__, including tables for artists, albums, media tracks, invoices and customers.
+
+## Data Model
+
+```{r, echo=F}
+knitr::include_graphics("img/chinook_data_model.png")
+```
+
+
+## About
+
+The Chinook database consists of 11 tables that represent 
+
+- `Employee` table stores employees data such as employee id, last name, first name, etc. It also has a field named `ReportsTo` to specify who reports to whom.
+
+- `Customer` table stores customers data.
+
+- `Invoice` & `InvoiceLine` tables: these two tables store invoice data. The `Invoice` table stores invoice header data and the `InvoiceLine` table stores the invoice line items data.
+
+- `Artist` table stores artists data. It is a simple table that contains only artist id and name.
+
+- `Album` table stores data about a list of tracks. Each album belongs to one artist. However, one artist may have multiple albums.
+
+- `MediaType` table stores media types such as MPEG audio file, ACC audio file, etc.
+
+- `Genre` table stores music types such as rock, jazz, metal, etc.
+
+- `Track` table store the data of songs. Each track belongs to one album.
+
+- `Playlist` & `PlaylistTrack` tables: `Playlist` table store data about playlists. Each playlist contains a list of tracks. Each track may belong to multiple playlists. The relationship between the `Playlist` table and `Track` table is many-to-many. The `PlaylistTrack` table is used to reflect this relationship.
+
+## Tables
+
+```{r, message=F}
+library(odbc)
+library(tidyverse)
+
+con <- dbConnect(RSQLite::SQLite(), "Chinook_Sqlite.sqlite")
+
+tbl_chr <- dbListTables(con)
+
+table_list <- tbl_chr %>%
+    map(~ tbl(con, .) %>% collect()) %>%
+    set_names(tbl_chr)
+
+table_list
+```
+
