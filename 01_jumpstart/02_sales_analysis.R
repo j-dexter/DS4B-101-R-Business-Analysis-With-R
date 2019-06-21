@@ -54,3 +54,46 @@ bike_orderlines_joined_tbl %>% glimpse()
 
 # 5.0 Wrangling Data ----
 
+#* dplyr is the workhorse here which is really a grammar of data manipulation.
+#* dplyr contains many functions/etc., but most imp are the five verbs.
+#* think of wrangling data as the 'manipulation and cleaning' stages of analysis.
+
+bike_orderlines_wrangled_tbl <- bike_orderlines_joined_tbl %>% 
+    
+    # Seperate description into category.1, category.2, and frame.material
+    separate(description,
+             into   = c("category.1", "category.2", "frame.material"),
+             sep    = " - ",
+             remove = TRUE) %>% 
+    
+    # Seperate location into city and state
+    separate(location,
+             into   = c("city", "state"),
+             sep    = ", ",
+             remove = FALSE) %>% 
+    
+    # Price extended
+    mutate(total.price = price * quantity) %>% 
+    
+    # Reorganize
+    select(-...1, -location) %>% 
+    select(-ends_with(".id")) %>% 
+    bind_cols(bike_orderlines_joined_tbl %>% select(order.id)) %>% 
+    
+    # Reorder columns
+    select(contains("date"), contains("id"), contains("order"),
+           quantity, price, total.price,
+           everything()) %>% 
+    
+    # Renaming columns
+    rename(order_date = order.date) %>% 
+    set_names(names(.) %>% str_replace_all("\\.", "_")) #* useful for renaming mult cols programatically
+    # \\ used as regex to escape '.' character that does something elsempse()
+
+bike_orderlines_wrangled_tbl %>% glimpse()
+    
+#* names() returns all the col names of a tibble as a character vector.
+#* PRO TIP: Using the dot(.) enables passing the incoming tibble to multiple spots in the function.
+#* dot(.) is used in dplyr pipes to supply the incoming df/tbl in another part of function.
+    #* i get it now: the dot allows me to reuse the tbl as an argument in other places
+        # besides just the 1st argment of the function it's fed into. AWESOME!!!
