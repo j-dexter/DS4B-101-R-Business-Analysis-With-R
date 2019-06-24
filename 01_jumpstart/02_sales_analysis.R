@@ -97,3 +97,114 @@ bike_orderlines_wrangled_tbl %>% glimpse()
 #* dot(.) is used in dplyr pipes to supply the incoming df/tbl in another part of function.
     #* i get it now: the dot allows me to reuse the tbl as an argument in other places
         # besides just the 1st argment of the function it's fed into. AWESOME!!!
+
+
+# 6.0 Business Insights ---- 
+
+# 6.1 Sales by Year ----
+
+# Step 1 - Manipulate
+
+sales_by_year_tbl <- bike_orderlines_wrangled_tbl %>% 
+    
+    # Selecting columns to focus on Adding a year column
+    select(order_date, total_price) %>% 
+    mutate(year = year(order_date)) %>% 
+    
+    # Grouping by year, and summarizing sales
+    group_by(year) %>% 
+    summarize(sales = sum(total_price)) %>% 
+    ungroup() %>% 
+    
+    # $ Format Text
+    mutate(sales_text = scales::dollar(sales))
+
+# Step 2 - Visualize
+
+#* PRO TIP: visualization is one of the most important skills a DS needs to know.
+#* ggplots: are built by adding successive layers including geometries/formatting elements
+#* ggplots: grammar of graphics (whereas dplyr is the grammar of data manipulation)
+#* access hexcodes: palette_light()
+palette_light()
+
+sales_by_year_tbl %>% 
+    
+    # Setup canvas with year (x-axis) and sales (y-axis)
+    ggplot(aes(x = year, y = sales)) +
+    
+    # Geometries
+    geom_col(fill = "#2c3e50") +
+    geom_label(aes(label = sales_text)) +
+    geom_smooth(method = "lm", se = FALSE) +
+    
+    # Formatting
+    theme_tq() +
+    scale_y_continuous(labels = scales::dollar) +
+    labs(
+        title = "Revenue by Year",
+        subtitle = "Upward Trend",
+        x = "",
+        y = "Revenue"
+    )
+
+# 6.2 Sales by Year and Category 2 ----
+
+# Step 1 - Manipulate
+
+sales_by_year_cat_2_tbl <- bike_orderlines_wrangled_tbl %>% 
+    
+    # Select columns and add a year column
+    select(order_date, total_price, category_2) %>%
+    mutate(year = year(order_date)) %>% 
+    
+    # Groupby and summarize on the year and category 2
+    group_by(year, category_2) %>% 
+    summarize(sales = sum(total_price)) %>% 
+    ungroup() %>% 
+    
+    # Format $ Text
+    mutate(sales_text = scales::dollar(sales))
+
+sales_by_year_cat_2_tbl
+
+# Step 2 - Visualize
+
+#* Fill: we can map cols to control the fill by categorical or continuous variables
+#* Pro-tip: use facet_wrap w/scales = "free_y" to show trend. 
+#* Pro-tip: use facet_wrap w/out scales to show magnitude. 
+#* As soon as a map a col to something like 'fill', then I can use that
+    # in things like 'scale_fill_tq'
+
+sales_by_year_cat_2_tbl %>% 
+    
+    # Set up x, y, fill
+    ggplot(aes(x = year, y = sales, fill = category_2)) +
+    
+    # Geometries
+    geom_col() +
+    geom_smooth(method = "lm", se = F) +
+    
+    # Facet: splits plots into multiple plots by a categorical feature
+    facet_wrap(~ category_2, ncol = 3, scales = "free_y") +
+    
+    # Formatting
+    theme_tq() +
+    scale_fill_tq() +
+    scale_y_continuous(labels = scales::dollar) +
+    labs(
+        title = "Revenue by Year and Category 2",
+        subtitle = "Each product category has an upward trend",
+        x = "",
+        y = "Revenue",
+        fill = "Product Secondary Category"
+    )
+
+
+
+
+
+
+
+
+
+
