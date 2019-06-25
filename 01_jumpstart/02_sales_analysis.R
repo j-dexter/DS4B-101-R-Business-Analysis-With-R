@@ -199,12 +199,49 @@ sales_by_year_cat_2_tbl %>%
         fill = "Product Secondary Category"
     )
 
+#* DATA VISUALIZATION PROCESS 
+    # notes from Matts explanation video on the 
+    # natural structure to making visualizations (see pdf).
 
+#* The Process
+    # 1) Collecting data from 1 or more sources
+    # 2) Join (data_joined_tbl) and clean the data (data_wrangled_tbl)
+    # 3) Visualize using Two-Step process
+            # a) Manipulate data-wrangled (data_by_group_tbl)
+            # b) Visualize
 
+#* Most Important Step: Cleaned Data
+    # Why? All data manipulation/visualization branches from here.
+    # protip: save cleaned data to save time/repetive work 
 
+#* The process for joining can also be saved: Data Processing Pipeline
 
+# 7.0 Writing Files ----
 
+fs::dir_create("00_data/bike_sales/data_wrangled_student")
 
+# 7.1 Excel ----
 
+#* Excel is great when others may want access to your data that are excel users.
+    # e.g., many bus. intelligence analyst use Excel not R.
 
+bike_orderlines_wrangled_tbl %>% 
+    write_xlsx("00_data/bike_sales/data_wrangled_student/bike_orderlines.xlsx")
+
+# 7.2 CSV ----
+
+#* CSV is a good option when others may use diff. languages such as pyton, java, or C++
+
+bike_orderlines_wrangled_tbl %>% 
+    write_csv("00_data/bike_sales/data_wrangled_student/bike_orderlines.csv")
+
+# 7.3 RDS ----
+
+#* Use RDS when you want to save ANY OBJECT. Not just tabular data.
+    # Save models, plots, anything! It's fast and preserves the object
+    # structure exactly (unlike Excel & CSV)
+
+bike_orderlines_wrangled_tbl %>% 
+    write_rds("00_data/bike_sales/data_wrangled_student/bike_orderlines.rds")
+dd
 
