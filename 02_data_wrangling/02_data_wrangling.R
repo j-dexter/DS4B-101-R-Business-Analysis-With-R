@@ -236,8 +236,87 @@ bike_orderlines_tbl %>%
     ungroup() %>% 
     arrange(desc(count))
 
+# summarize_all() - detect missing values
+
+#* one of the scoped variants for applying operations to selected columns
+
+bike_orderlines_missing <- bike_orderlines_tbl %>% 
+    mutate(total_price = c(rep(NA, 4), total_price[5:nrow(.)]))
+
+#* most data sets are dirty: you need to be able to detect the
+    # number of missing values and percentage of missing values.
+    # summarize_all() is great for this
+
+#* is.na() returns a vector of TRUE/FALSE, TRUE if a value is missing (i.e. is NA)
+
+#* Key Concept: binary vectors (TRUE/FALSE) can be summed to 
+    # count the number of TRUE values.
+
+# use anonymous function to count NAs in each column
+bike_orderlines_missing %>%
+    summarize_all(~ sum(is.na(.)))
+
+#* Breaking down ~ sum(is.na(.))
+    # a) this is an anonymous function used commonly in dplyr.
+    # b) ~ is.na(.) would apply is.na() to all columns, 
+            # returning 4 TRUE values and 16,640 FALSE values.
+    # c) ~ sum(is.na(.)) - counts the number of TRUE values returning 4.
+            # This is b/c TRUE = 1 and FALSE = 0 in R
+
+#* length() returns a single value that is the length of the vector
+
+# use anonymous function to get proportion missing in each column
+bike_orderlines_missing %>% 
+    summarise_all(~ sum(is.na(.)) / length(.) )
+
+#* options for handling missing values
+    # 1) filter() - remove
+    # 2) tidyr package (import cheatsheet pg 2)
+            # a) drop_na() - remove (filter shortcut)
+            # b) fill() - replace up/down
+            # c) replace_na() - replace by specifying
+    # 3) advanced topic
+            # a) impute - programmatically replace
+                    # using 'recipes' package in 201 course
+
+# removing NA using filter on specific column
+bike_orderlines_missing %>% 
+    filter(!is.na(total_price))
+
+# 6.0 Renaming Columns with rename() and set_names() ----
+
+# 6.1 rename: One column at a time ----
+
+bikeshop_revenue_tbl <- bike_orderlines_tbl %>% 
+    select(bikeshop_name, category_1, total_price) %>% 
+    
+    group_by(bikeshop_name, category_1) %>% 
+    summarize(sales = sum(total_price)) %>% 
+    ungroup() %>% 
+    
+    arrange(desc(sales))
+
+# rename() columns individually
+bikeshop_revenue_tbl %>% 
+    rename(
+        `Bikshop Name`     = bikeshop_name,
+        `Primary Category` = category_1,
+        Sales              = sales
+    )
+
+# 6.2 set_names(): All columns at once ----
+
+# manually change all names
+bikeshop_revenue_tbl %>% 
+    set_names(c("Bikeshop Name", "Primary Category", "Sales"))
+
+# programmatically change all names
+bikeshop_revenue_tbl %>% 
+    set_names(names(.) %>% str_replace("_", " ") %>% str_to_title())
 
 
+ 
+    
 
 
 
