@@ -575,7 +575,7 @@ $(document).ready(function () {
 <a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw">library</span>(tidyverse)</a>
 <a class="sourceLine" id="cb1-3" data-line-number="3"><span class="kw">theme_set</span>(tidyquant<span class="op">::</span><span class="kw">theme_tq</span>())</a></code></pre></div>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="co"># Read bike orderlines data</span></a>
-<a class="sourceLine" id="cb2-2" data-line-number="2">path_bike_orderlines &lt;-<span class="st"> &quot;00_data/bike_sales/data_wrangled/bike_orderlines.rds&quot;</span></a>
+<a class="sourceLine" id="cb2-2" data-line-number="2">path_bike_orderlines &lt;-<span class="st"> &quot;../00_data/bike_sales/data_wrangled/bike_orderlines.rds&quot;</span></a>
 <a class="sourceLine" id="cb2-3" data-line-number="3">bike_orderlines_tbl &lt;-<span class="st"> </span><span class="kw">read_rds</span>(path_bike_orderlines)</a>
 <a class="sourceLine" id="cb2-4" data-line-number="4"></a>
 <a class="sourceLine" id="cb2-5" data-line-number="5"><span class="kw">glimpse</span>(bike_orderlines_tbl)</a></code></pre></div>
@@ -595,7 +595,7 @@ $(document).ready(function () {
 ## $ city           &lt;chr&gt; &quot;Ithaca&quot;, &quot;Ithaca&quot;, &quot;Kansas City&quot;, &quot;Kansas City&quot;,…
 ## $ state          &lt;chr&gt; &quot;NY&quot;, &quot;NY&quot;, &quot;KS&quot;, &quot;KS&quot;, &quot;KY&quot;, &quot;KY&quot;, &quot;KY&quot;, &quot;KY&quot;, &quot;…</code></pre>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="co"># Read bikes data</span></a>
-<a class="sourceLine" id="cb4-2" data-line-number="2">path_bikes &lt;-<span class="st"> &quot;00_data/bike_sales//data_raw/bikes.xlsx&quot;</span></a>
+<a class="sourceLine" id="cb4-2" data-line-number="2">path_bikes &lt;-<span class="st"> &quot;../00_data/bike_sales//data_raw/bikes.xlsx&quot;</span></a>
 <a class="sourceLine" id="cb4-3" data-line-number="3">bikes_tbl &lt;-<span class="st"> </span>readxl<span class="op">::</span><span class="kw">read_excel</span>(path_bikes)</a>
 <a class="sourceLine" id="cb4-4" data-line-number="4"></a>
 <a class="sourceLine" id="cb4-5" data-line-number="5"><span class="kw">glimpse</span>(bikes_tbl)</a></code></pre></div>
@@ -779,14 +779,16 @@ $(document).ready(function () {
 <a class="sourceLine" id="cb16-5" data-line-number="5"><span class="st">    </span><span class="kw">ungroup</span>() <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb16-6" data-line-number="6"><span class="st">    </span></a>
 <a class="sourceLine" id="cb16-7" data-line-number="7"><span class="st">    </span><span class="kw">spread</span>(<span class="dt">key =</span> frame_material, <span class="dt">value =</span> Sales, <span class="dt">fill =</span> <span class="dv">0</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb16-8" data-line-number="8"><span class="st">    </span><span class="kw">mutate</span>(<span class="st">`</span><span class="dt">Total Sales</span><span class="st">`</span> =<span class="st"> </span>Aluminum <span class="op">+</span><span class="st"> </span>Carbon) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb16-9" data-line-number="9"><span class="st">    </span><span class="kw">arrange</span>(<span class="kw">desc</span>(<span class="st">`</span><span class="dt">Total Sales</span><span class="st">`</span>)) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb16-10" data-line-number="10"><span class="st">    </span></a>
-<a class="sourceLine" id="cb16-11" data-line-number="11"><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">Aluminum      =</span> scales<span class="op">::</span><span class="kw">dollar</span>(Aluminum),</a>
-<a class="sourceLine" id="cb16-12" data-line-number="12">           <span class="dt">Carbon        =</span> scales<span class="op">::</span><span class="kw">dollar</span>(Carbon),</a>
-<a class="sourceLine" id="cb16-13" data-line-number="13">           <span class="st">`</span><span class="dt">Total Sales</span><span class="st">`</span> =<span class="st"> </span>scales<span class="op">::</span><span class="kw">dollar</span>(<span class="st">`</span><span class="dt">Total Sales</span><span class="st">`</span>)) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb16-14" data-line-number="14"><span class="st">    </span><span class="kw">rename</span>(<span class="st">`</span><span class="dt">Primary Category</span><span class="st">`</span>   =<span class="st"> </span>category_<span class="dv">1</span>,</a>
-<a class="sourceLine" id="cb16-15" data-line-number="15">           <span class="st">`</span><span class="dt">Secondary Category</span><span class="st">`</span> =<span class="st"> </span>category_<span class="dv">2</span>) </a></code></pre></div>
+<a class="sourceLine" id="cb16-8" data-line-number="8"><span class="st">    </span><span class="co"># replace_na(list(Alumnimum = 0, Carbon = 0))</span></a>
+<a class="sourceLine" id="cb16-9" data-line-number="9"><span class="st">    </span><span class="kw">mutate</span>(<span class="st">`</span><span class="dt">Total Sales</span><span class="st">`</span> =<span class="st"> </span>Aluminum <span class="op">+</span><span class="st"> </span>Carbon) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb16-10" data-line-number="10"><span class="st">    </span><span class="kw">arrange</span>(<span class="kw">desc</span>(<span class="st">`</span><span class="dt">Total Sales</span><span class="st">`</span>)) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb16-11" data-line-number="11"><span class="st">    </span></a>
+<a class="sourceLine" id="cb16-12" data-line-number="12"><span class="st">    </span><span class="kw">mutate_if</span>(is.numeric, scales<span class="op">::</span>dollar) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb16-13" data-line-number="13"><span class="st">    </span><span class="co"># mutate(Aluminum      = scales::dollar(Aluminum),</span></a>
+<a class="sourceLine" id="cb16-14" data-line-number="14"><span class="st">    </span><span class="co">#        Carbon        = scales::dollar(Carbon),</span></a>
+<a class="sourceLine" id="cb16-15" data-line-number="15"><span class="st">    </span><span class="co">#        `Total Sales` = scales::dollar(`Total Sales`)) %&gt;% </span></a>
+<a class="sourceLine" id="cb16-16" data-line-number="16"><span class="st">    </span><span class="kw">rename</span>(<span class="st">`</span><span class="dt">Primary Category</span><span class="st">`</span>   =<span class="st"> </span>category_<span class="dv">1</span>,</a>
+<a class="sourceLine" id="cb16-17" data-line-number="17">           <span class="st">`</span><span class="dt">Secondary Category</span><span class="st">`</span> =<span class="st"> </span>category_<span class="dv">2</span>) </a></code></pre></div>
 <pre><code>## # A tibble: 9 x 5
 ##   `Primary Category` `Secondary Category` Aluminum  Carbon    `Total Sales`
 ##   &lt;chr&gt;              &lt;chr&gt;                &lt;chr&gt;     &lt;chr&gt;     &lt;chr&gt;        

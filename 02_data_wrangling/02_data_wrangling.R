@@ -370,8 +370,53 @@ orderlines_tbl %>%
 
 # 9.1 bind_cols()
 
+bike_orderlines_tbl %>% 
+    select(-contains("order")) %>% 
+    
+    bind_cols(
+        bike_orderlines_tbl %>% select(order_id)
+    )
+
+# 9.2 bind_rows()
+
+train_tbl <- bike_orderlines_tbl %>% 
+    slice(1:(nrow(.)/2))
+
+test_tbl <- bike_orderlines_tbl %>% 
+    slice((nrow(.)/2 + 1):nrow(.))
+
+test_tbl
+train_tbl
+
+# bind two data sets back together
+train_tbl %>% 
+    bind_rows(test_tbl)
 
 
+# 10.0 Seperate & Unite ----
+
+bike_orderlines_tbl %>% 
+    select(order_date) %>% 
+    mutate(order_date = as.character(order_date)) %>% 
+    
+    # seperate
+    separate(col = order_date, 
+             into = c("year", "month", "day"),
+             sep = "-", 
+             remove = FALSE) %>% 
+    
+    mutate(
+        year  = as.numeric(year),
+        month = as.numeric(month),
+        day   = as.numeric(day)
+    ) %>% 
+    
+    # unite
+    unite(order_date_united,
+          year, month, day,
+          sep = "-",
+          remove = FALSE) %>% 
+    mutate(order_date_united = as.Date(order_date_united))
 
 
 
