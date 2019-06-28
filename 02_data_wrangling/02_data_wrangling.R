@@ -315,8 +315,62 @@ bikeshop_revenue_tbl %>%
     set_names(names(.) %>% str_replace("_", " ") %>% str_to_title())
 
 
+# 7.0 Reshaping (Pivoting) Data with spread() and gather() ----
+
  
+# 7.1 spread(): Long to Wide ----
+
+bikeshop_revenue_formatted_tbl <- bikeshop_revenue_tbl %>% 
+    spread(key = category_1, value = sales) %>% 
+    arrange(desc(Mountain)) %>% 
+    rename(`Bikeshop Name` = bikeshop_name) %>% 
     
+    mutate(Mountain = scales::dollar(Mountain),
+           Road     = scales::dollar(Road)
+           )
+
+bikeshop_revenue_formatted_tbl
+
+# 7.2 gather(): Wide to Long ----
+
+#* Data type for analysis: when you want to analyze data, think
+    # about what format it should be in.
+#* Typically Two Formats:
+    # 1) Numeric (dbl) OR
+    # 2) Categorical (factor)
+
+# my way
+bikeshop_revenue_formatted_tbl %>% 
+    gather(key = "category_1", value = "sales", Mountain, Road) %>% 
+    mutate(sales = str_remove_all(sales, pattern = "[$,]"),
+           sales = as.numeric(sales))
+    
+# matts way (escaping special character dollar sign)
+bikeshop_revenue_formatted_tbl %>% 
+    gather(key = "category_1", value = "sales", Mountain, Road) %>% 
+    mutate(sales = str_remove_all(sales, pattern = "\\$|,"),
+           sales = as.numeric(sales)) %>% 
+    arrange(desc(sales))
+
+
+# 8.0 Joining Data by Key(s) with left_join() (e.g. VLOOKUP in Excel)
+
+orderlines_tbl
+bikes_tbl
+
+?left_join
+
+orderlines_tbl %>% 
+    left_join(y = bikes_tbl, by = c("product.id" = "bike.id"))
+
+
+# 9.0 Binding Data by Row or by Column with bind_rows() and bind_cols() ----
+
+#* Protip: drop cols, rows as needed + add back later once needed (common practice)
+
+# 9.1 bind_cols()
+
+
 
 
 
