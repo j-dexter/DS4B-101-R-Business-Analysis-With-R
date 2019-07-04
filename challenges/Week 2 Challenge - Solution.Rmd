@@ -1,0 +1,235 @@
+---
+title: "Week 2 Challenge"
+author: "Business Science"
+date: "12/30/2018"
+output: 
+    html_document:
+        toc: TRUE
+        theme: flatly
+        highlight: tango
+        code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+    echo = TRUE
+    )
+```
+
+# Challenge Summary
+
+This is a short challenge to begin applying what you are learning to the problem at hand. You will go through a series of questions related to the course project goals: 
+
+1. Coming up with a new product idea, and 
+
+2. Segmenting the customer-base
+
+# Objectives
+
+1. Apply `dplyr` and `tidyr` functions to answer questions related to the course projects. 
+
+2. Gain exposure to `rmarkdown`
+
+# Data
+
+To read the data, make sure that the paths point to the appropriate data sets. Saving the file in the main directory should enable the paths to be detected correctly. 
+
+```{r, message=FALSE, warning=FALSE}
+# Load libraries
+library(tidyverse)
+```
+
+```{r}
+# Read bike orderlines data
+path_bike_orderlines <- "00_data/bike_sales/data_wrangled/bike_orderlines.rds"
+bike_orderlines_tbl <- read_rds(path_bike_orderlines)
+
+glimpse(bike_orderlines_tbl)
+```
+
+```{r}
+# Read bikes data
+path_bikes <- "00_data/bike_sales//data_raw/bikes.xlsx"
+bikes_tbl <- readxl::read_excel(path_bikes)
+
+glimpse(bikes_tbl)
+```
+
+# Questions
+
+
+
+## 1. What are the unique categories of products? (Difficulty = Low)
+
+- Begin with `bike_orderlines_tbl`
+- Use `distinct()` to evaluate 
+
+Review Primary Product Category (`category_1`).
+
+```{r}
+bike_orderlines_tbl %>%
+    distinct(category_1)
+```
+
+
+Review Secondary Product Category (`category_2`).
+
+```{r}
+bike_orderlines_tbl %>%
+    distinct(category_2)
+```
+
+Review Frame Material (`frame_material`).
+
+```{r}
+bike_orderlines_tbl %>%
+    distinct(frame_material)
+```
+
+
+## 2. Which product categories have the most sales? (Difficulty = Medium)
+
+- Select appropriate columns from `bike_orderlines_tbl`
+- Group and summarize the data calling the new column `Sales`. Make sure to ungroup. 
+- Arrange descending by `Sales`
+- Rename column names to `Primary Category`, `Secondary Category`, or `Frame Material` (as appropriate).
+- Format the Sales as `dollar()` 
+
+Review Primary Product Category (`category_1`).
+
+```{r}
+bike_orderlines_tbl %>%
+    
+    # Select columns
+    select(category_1, total_price) %>%
+    
+    # Group and summarize
+    group_by(category_1) %>%
+    summarize(sales = sum(total_price))  %>%
+    ungroup() %>%
+    
+    # Arrange descending
+    arrange(desc(sales)) %>%
+    
+    # Rename columns
+    rename(
+        `Primary Category` = category_1,
+        Sales = sales
+    ) %>%
+    
+    # Format dollar
+    mutate(Sales = Sales %>% scales::dollar())
+    
+```
+
+Review Secondary Product Category (`category_2`).
+
+```{r}
+bike_orderlines_tbl %>%
+    
+    # Select columns
+    select(category_2, total_price) %>%
+    
+    # Group and summarize
+    group_by(category_2) %>%
+    summarize(sales = sum(total_price))  %>%
+    ungroup() %>%
+    
+    # Arrange descending
+    arrange(desc(sales)) %>%
+    
+    # Rename columns
+    rename(
+        `Secondary Category` = category_2,
+        Sales = sales
+    ) %>%
+    
+    # Format dollar
+    mutate(Sales = Sales %>% scales::dollar())
+    
+```
+
+
+Review Frame Material (`frame_material`).
+
+```{r}
+bike_orderlines_tbl %>%
+    
+    # Select columns
+    select(frame_material, total_price) %>%
+    
+    # Group and summarize
+    group_by(frame_material) %>%
+    summarize(sales = sum(total_price))  %>%
+    ungroup() %>%
+    
+    # Arrange descending
+    arrange(desc(sales)) %>%
+    
+    # Rename columns
+    # Rename columns
+    rename(
+        `Frame Material` = frame_material,
+        Sales = sales
+    ) %>%
+    
+    # Format dollar
+    mutate(Sales = Sales %>% scales::dollar())
+    
+```
+
+## 3. Do all combinations primary and secondary bike category contain both Aluminum and Carbon frame materials? (Difficulty = High)
+
+Hint - Use summarized sales values and `spread()` to identify gaps in frame materials. 
+
+- Select `category_1`, `category_2`, `frame_material`, and `total_price`
+- Summarize the data using group by, summarize and ungroup. 
+- Pivot the frame material and sales column into Alumninum and Carbon
+- Fill `NA` values with zeros
+- Add a `total_sales` column
+- Arrange descending by `total_sales`
+- Format all numbers as `dollar()`
+- Rename all Columns: Primary Category, Secondary Category, Aluminum, Carbon, Total Sales
+
+```{r}
+bike_orderlines_tbl %>%
+    
+    # Select columns
+    select(category_1, category_2, frame_material, total_price) %>%
+    
+    # group_by, summarize, ungroup
+    group_by(category_1, category_2, frame_material) %>%
+    summarize(sales = sum(total_price)) %>%
+    ungroup() %>%
+    
+    # spread
+    spread(key = frame_material, value = sales) %>%
+    
+    # replace NA
+    replace_na(list(Aluminum = 0, Carbon = 0)) %>%
+    
+    # Add Total Sales column
+    mutate(total_sales = Aluminum + Carbon) %>%
+    
+    # Arrange descending
+    arrange(desc(total_sales)) %>%
+    
+    # Format dollar
+    mutate(
+        Aluminum = scales::dollar(Aluminum),
+        Carbon   = scales::dollar(Carbon),
+        total_sales = scales::dollar(total_sales)
+    ) %>%
+    
+    # Rename columns
+    rename(
+        `Primary Category`   = category_1,
+        `Secondary Category` = category_2,
+        `Total Sales`        = total_sales
+    ) 
+```
+
+
+
+
+
