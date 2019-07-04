@@ -143,7 +143,16 @@ sales_by_cat_2_q_tbl %>%
 
 sales_by_cat_2_tbl %>% 
     
+    mutate(category_2 = category_2 %>% fct_lump(n = 6,
+                                                w = sales,
+                                                other_level = "All Other Bike Categories")) %>% 
+    group_by(category_2) %>% 
+    summarize(sales = sum(sales)) %>% 
     
+    # manually reorder factors
+    mutate(category_2 = category_2 %>% fct_relevel("All Other Bike Categories", after = 0)) %>% 
+    
+    plot_sales()
 
 
 
