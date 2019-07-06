@@ -196,6 +196,8 @@ bike_orderlines_tbl %>%
 
 _What does this tell us about how bikes are priced?_
 
+**ANSWER:** Wide range of prices within model-bases. Appears to be lower tier and upper tier.
+
 ```{r}
 
 bike_orderlines_tbl %>% 
