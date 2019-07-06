@@ -56,4 +56,7 @@ g
 
 # Anatomy of a ggplot2 Object: What is g?
 
+#* the ggplot object contains all the base options that we built upon.
+#* it stores all the work we did to create our beautiful plot.
+
 View(g)
