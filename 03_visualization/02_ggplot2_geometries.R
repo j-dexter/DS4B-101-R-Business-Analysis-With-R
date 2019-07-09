@@ -156,14 +156,19 @@ unit_price_by_cat_2_tbl %>%
     ggplot(aes(category_2, price)) +
     
     geom_boxplot() +
-    coord_flip()
+    coord_flip() +
+    theme_tq()
 
 # Violin Plot & Jitter Plot
-
-
-
-
-
+unit_price_by_cat_2_tbl %>% 
+    
+    ggplot(aes(category_2,price)) +
+    
+    geom_jitter(width = 0.15, color = "#2c3e50") +
+    geom_violin(alpha = 0.5) +
+    
+    coord_flip() +
+    theme_tq()
 
 
 # 6.0 Adding Text & Labels ----
@@ -172,9 +177,38 @@ unit_price_by_cat_2_tbl %>%
 
 # Data Manipulation
 
+revenue_by_year_tbl <- bike_orderlines_tbl %>% 
+    
+    select(order_date, total_price) %>% 
+    
+    mutate(year = year(order_date)) %>% 
+    
+    group_by(year) %>% 
+    summarize(revenue = sum(total_price)) %>% 
+    ungroup()
 
 # Adding text to bar chart
 
+revenue_by_year_tbl %>% 
+    
+    ggplot(aes(year, revenue)) +
+    
+    geom_col(fill = palette_light()[1]) +
+    geom_smooth(method = "lm", se = FALSE) +
+    
+    geom_text(aes(label = scales::dollar(revenue, scale = 1e-6, suffix = "M")),
+                  vjust = 1.5, color = "white") +
+    
+    geom_label(label = "Major Demand This Year",
+               vjust = -0.5,
+               size  = 5,
+               fill  = palette_light()[6],
+               color = "white",
+               fontface = "italic",
+               data  = revenue_by_year_tbl %>% filter(year == 2013)) +
+    
+    theme_tq() +
+    expand_limits(y= 2e7)
 
 # Filtering labels to highlight a point
 
