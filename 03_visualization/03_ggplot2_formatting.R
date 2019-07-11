@@ -34,62 +34,109 @@ sales_by_year_category_2_tbl
 # 1.1 Color Conversion ----
 
 # Named Colors
+colors()
 
+sales_by_year_category_2_tbl %>% 
+    
+    ggplot(aes(year, revenue)) +
+    
+    geom_col(fill = rgb(44, 62, 80, maxColorValue = 255) )
 
 # To RGB
+col2rgb("slateblue")
 
+col2rgb("#2c3e50")
 
 # To HEX
- 
+rgb(44, 62, 80, maxColorValue = 255) 
 
 # 1.2 Color Palettes ----
 
 # tidyquant
+tidyquant::palette_light()
 
+palette_light()[2] %>% col2rgb()
 
 # Brewer
+RColorBrewer::display.brewer.all()
+RColorBrewer::brewer.pal.info
 
+# Grab specific palettes
+RColorBrewer::brewer.pal(n = 8, name = "Blues")
+
+sales_by_year_category_2_tbl %>% 
+    
+    ggplot(aes(year, revenue)) +
+    
+    geom_col(fill = RColorBrewer::brewer.pal(n = 8, name = "Blues")[8])
 
 # Viridis
+viridisLite::viridis((n = 20))
 
-
-
+sales_by_year_category_2_tbl %>% 
+    
+    ggplot(aes(year, revenue)) +
+    
+    geom_col(fill = viridisLite::viridis((n = 20))[1])
 
 # 2.0 Aesthetic Mappings ----
 
 # 2.1 Color  -----
 # - Used with line and points, Outlines of rectangular objects
 
+#* defining locally (in geom) vs. defining aestethics globabolly (ggplot)
 
-# Usine colors as aesthetics
-
-
+sales_by_year_category_2_tbl %>% 
+    
+    ggplot(aes(year, revenue)) +
+    geom_line(aes(color = category_2)) +
+    geom_point(color = "dodgerblue", size = 3)
 
 
 # 2.2 Fill  -----
 # - Used with fill of rectangular objects 
 
-
+sales_by_year_category_2_tbl %>% 
+    
+    ggplot(aes(year, revenue)) +
+    geom_col(aes(fill = category_2))
 
 # 2.3 Size ----
 # - Used with points
 
-
-
+sales_by_year_category_2_tbl %>% 
+    
+    ggplot(aes(year, revenue)) +
+    geom_line(aes(color = category_2), size = 2) +
+    geom_point(aes(size = revenue))
 
 
 # 3.0 Faceting ----
-# - Great way to tease out variation by category
+# - Great way to tease out variation by category #*
 
 # Goal: Sales annual sales by category 2
 
-
+sales_by_year_category_2_tbl %>% 
+    
+    ggplot(aes(year, revenue, color = category_2)) +
+    geom_line(color = "black") +
+    geom_smooth(method = "lm", se = F) +
+    
+    facet_wrap(~ category_2, ncol = 3, scales = "free_y") +
+    
+    expand_limits(y = 0)
 
 
 # 4.0 Position Adjustments (Stack & Dodge) ----
 
 # Stacked Bars & Side-By-Side Bars
 
+sales_by_year_category_2_tbl %>% 
+    
+    ggplot(aes(year, revenue, fill = category_2)) +
+    # geom_col(position = "stack")
+    # geom_col(position = "dodge")
+    geom_col(position = position_dodge(width = 0.9), color = "white")
 
 # Stacked Area
 
