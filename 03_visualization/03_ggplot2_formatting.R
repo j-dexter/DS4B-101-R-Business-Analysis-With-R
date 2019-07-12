@@ -60,9 +60,9 @@ palette_light()[2] %>% col2rgb()
 # Brewer
 RColorBrewer::display.brewer.all()
 RColorBrewer::brewer.pal.info
+RColorBrewer::brewer.pal(n = 8, name = "Blues")
 
 # Grab specific palettes
-RColorBrewer::brewer.pal(n = 8, name = "Blues")
 
 sales_by_year_category_2_tbl %>% 
     
@@ -140,8 +140,10 @@ sales_by_year_category_2_tbl %>%
 
 # Stacked Area
 
-
-
+sales_by_year_category_2_tbl %>% 
+    
+    ggplot(aes(year, revenue, fill = category_2)) +
+    geom_area(color = "black")
 
 # 5.0 Scales (Colors, Fills, Axis) ----
 
@@ -151,52 +153,160 @@ sales_by_year_category_2_tbl %>%
 
 # Plot 1: Faceted Plot, Color = Continuous Scale
 
+g_facet_continuous <- sales_by_year_category_2_tbl %>% 
+    
+    ggplot(aes(year, revenue, color = revenue)) +
+    geom_line(size = 1) +
+    geom_point(size = 3) +
+    
+    facet_wrap(~ category_2, scales = "free_y") +
+    expand_limits(y = 0) +
+    
+    theme_minimal()
+
+g_facet_continuous
 
 # Plot 2: Faceted Plot, Color = Discrete Scale
 
+g_facet_discrete <- sales_by_year_category_2_tbl %>% 
+    
+    ggplot(aes(year, revenue, color = category_2)) +
+    geom_line(size = 1) +
+    geom_point(size = 3) +
+    
+    facet_wrap(~ category_2, scales = "free_y") +
+    expand_limits(y = 0) +
+    
+    theme_minimal()
+
+g_facet_discrete
 
 # Plot 3: Stacked Area Plot
 
+g_area_discrete <- sales_by_year_category_2_tbl %>% 
+    
+    ggplot(aes(year, revenue, fill = category_2)) +
+    geom_area(color = "black") +
+    
+    theme_minimal()
 
-
+g_area_discrete
 
 # 5.2 Scale Colors & Fills ----
 # - Awesome way to show variation by groups (discrete) and by values (continuous)
 
 # Color by Revenue (Continuous Scale)
-
-
-
+g_facet_continuous +
+    
+    # scale_color_continuous(low = "cornflowerblue",
+    #                        high = "black")
+    
+    scale_color_viridis_c(option = "B",
+                          direction = -1)
 
 # Color by Category 2 (Discrete Scale)
+RColorBrewer::display.brewer.all()
+RColorBrewer::brewer.pal.info
+RColorBrewer::brewer.pal(n = 8, name = "Blues")
 
+g_facet_discrete +
+    scale_color_brewer(palette = "Set1") +
+    theme_dark()
 
+g_facet_discrete +
+    scale_color_tq(theme = "dark") +
+    theme_minimal()
+
+g_facet_discrete +
+    scale_color_viridis_d(option = "E") +
+    theme_dark()
 
 # Fill by Category 2
 
- 
+g_area_discrete +
+    scale_fill_brewer(palette = "Set3")
 
+g_area_discrete +
+    scale_fill_tq()
+
+g_area_discrete +
+    scale_fill_viridis_d()
 
 # 5.3 Axis Scales ----
 
-
-
-
+g_facet_continuous +
+    scale_x_continuous(breaks = seq(2011, 2015, by = 2)) +
+    scale_y_continuous(labels = scales::dollar_format(scale = 1e-6, suffix = "M"))
 
 # 6.0 Labels ----
 
-
-
+g_facet_continuous +
+    scale_x_continuous(breaks = seq(2011, 2015, by = 2)) +
+    scale_y_continuous(labels = scales::dollar_format(scale = 1e-6, suffix = "M")) +
+    
+    geom_smooth(method = "lm", se = FALSE) +
+    
+    scale_color_viridis_c() +
+    theme_dark() +
+    
+    labs(
+        title = "Bike Sales",
+        subtitle = "Sales are trending up",
+        caption = "5-year sales trends\ncomes from our ERP Database",
+        x = "Year",
+        y = "Revenue ($M)",
+        color = "Revenue"
+    )
 
 # 7.0 Themes  ----
 
-
-
+g_facet_continuous +
+    
+    theme_light() +
+    
+    theme(
+        axis.text.x = element_text(
+            angle = 45,
+            hjust = 1
+        ),
+        strip.background = element_rect(
+            color = "black",
+            fill = "cornflowerblue",
+            size = 1
+        ),
+        strip.text = element_text(
+            face = "bold",
+            color = "white"
+        )
+    )
 
 # 8.0 Putting It All Together ----
 
-
-
+sales_by_year_category_2_tbl %>% 
+    
+    ggplot(aes(year, revenue, fill = category_2)) +
+    geom_area(color = "black") +
+    
+    # Scales
+    scale_fill_brewer(palette = "Blues", direction = -1) +
+    scale_y_continuous(labels = scales::dollar_format(scale = 1e-6, suffix = "M")) +
+    
+    # Labels
+    labs(
+        title    = "Sales Over Year by Category 2",
+        subtitle = "Sales Trending Upward",
+        x        = "",
+        y        = "Revenue ($M)",
+        fill     = "2nd Category",
+        caption  = "Bike sales trends look strong heading into 2016"
+    ) +
+    
+    # Theme
+    theme_light() +
+    theme(title        = element_text(face = "bold", color = "#083068"),
+          axis.title.y = element_text(margin = margin(r = 10), size = 15),
+          plot.caption = element_text(size = 14)
+    )
 
 
 
