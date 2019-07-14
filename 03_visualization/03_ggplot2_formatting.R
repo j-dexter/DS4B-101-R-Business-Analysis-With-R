@@ -307,7 +307,3 @@ sales_by_year_category_2_tbl %>%
           axis.title.y = element_text(margin = margin(r = 10), size = 15),
           plot.caption = element_text(size = 14)
     )
-
-
-
-
