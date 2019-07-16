@@ -91,10 +91,53 @@ top_customers_tbl %>%
 # Goal: Visualize heatmap of proportion of sales by Secondary Product Category
 
 # Data Manipulation
-
+pct_sales_by_customer_tbl <- bike_orderlines_tbl %>% 
+    
+    select(bikeshop_name, category_1, category_2, quantity) %>% 
+    
+    group_by(bikeshop_name, category_1, category_2) %>% 
+    summarize(total_qty = sum(quantity)) %>% 
+    ungroup() %>% 
+    
+    group_by(bikeshop_name) %>% 
+    mutate(pct = total_qty / sum(total_qty)) %>% 
+    ungroup() %>% 
+    
+    mutate(bikeshop_name = as.factor(bikeshop_name) %>% fct_rev) %>% 
+    mutate(bikeshop_name_num = as.numeric(bikeshop_name))
 
 # Data Visualization
-
+pct_sales_by_customer_tbl %>% 
+    
+    ggplot(aes(category_2, bikeshop_name)) +
+    
+    # Geometries
+    geom_tile(aes(fill = pct)) +
+    geom_text(aes(label = scales::percent(pct)),
+              size = 3) +
+    facet_wrap(~ category_1, scales = "free_x") +
+    
+    # Formatting
+    scale_fill_gradient(low = "white", high = palette_light()[1]) +
+    labs(
+        title = "Heatmap of Purchasing Habits",
+        x = "Bike Type (Category 2)",
+        y = "Customer",
+        caption = str_glue(
+        "Customers that prefer Road: 
+        Ann Arbor Speed, Austin Cruisers, & Indianapolis Velocipedes
+        
+        Customers that prefer Mountain: 
+        Ithaca Mountain Climbers, Pittsburg Mountain Mahines, & Tampa 29ers")
+    ) +
+    
+    theme_tq() +
+    theme(
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none",
+        plot.title = element_text(face = "bold"),
+        plot.caption = element_text(face = "bold.italic")
+    ) 
 
 
 
