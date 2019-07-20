@@ -126,26 +126,72 @@ formula(y ~ x) %>% class_detect()
 #  - Goal: Use box plot approach to identify outliers
 
 # Make bikes_tbl
-
-
+bikes_tbl <- bike_orderlines_tbl %>% 
+    distinct(model, category_1, price)
 
 # Visualize Box Plot
-
-
+bikes_tbl %>% 
+    ggplot(aes(x = category_1, y = price)) +
+    geom_boxplot()
 
 # Create remove_outliers()
+x <- c(0:10, 50, NA_real_)
+x
 
+detect_outliers <- function(x) {
+    
+    if (missing(x)) stop("The argument x needs a vector.")
+    
+    if (!is.numeric(x)) stop("The argument x must be numeric.")
+    
+    data_tbl <- tibble(data = x)
+    
+    limits_tbl <- data_tbl %>% 
+        summarise(
+            quantile_lo = quantile(data, probs = 0.25, na.rm = TRUE),
+            quantile_hi = quantile(data, probs = 0.75, na.rm = TRUE),
+            iqr         = IQR(data, na.rm = TRUE),
+            limit_lo    = quantile_lo - 1.5 * iqr,
+            limit_hi    = quantile_hi + 1.5 * iqr
+        )
+    
+    output_tbl <- data_tbl %>% 
+        mutate(outlier = case_when(
+            data < limits_tbl$limit_lo ~ TRUE,
+            data > limits_tbl$limit_hi ~ TRUE,
+            TRUE ~ FALSE
+        ))
+    
+    return(output_tbl$outlier)
+    
+}
 
+detect_outliers()
+detect_outliers("a")
+detect_outliers(x)
+
+#* Test our vectorized funciton in Mutate()
+tibble(x = x) %>% 
+    mutate(outlier = detect_outliers(x))
 
 # Apply remove_outliers() to bikes_tbl
-
-
+bike_outliers_tbl <- bikes_tbl %>% 
+    
+    group_by(category_1) %>% 
+    mutate(outlier = detect_outliers(price)) %>% 
+    ungroup()
 
 # Visualize with remove_outlers()
-
-
-
-
+bike_outliers_tbl %>% 
+    
+    ggplot(aes(x = category_1, y = price)) +
+    geom_boxplot() +
+    
+    ggrepel::geom_label_repel(aes(label = model),
+                              color = "red",
+                              size  = 3,
+                              data = . %>%
+                                  filter(outlier))
 
 # 5.0 DATA FUNCTION: FEATURE ENGINEERING ----
 #  - Goal: Want to simplify the text feature engineering steps to convert model name to features
