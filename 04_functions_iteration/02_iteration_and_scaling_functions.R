@@ -288,7 +288,7 @@ tidy_loess <- function(data, span = 0.2) {
 rolling_avg_3_tbl_nested$data[[2]] %>% 
     tidy_loess()
 
-# 4.5 Map Function to All Categories ----
+# 4.5 Step 3: Map Function to All Categories ----
 
 #* time to scale our function
 
