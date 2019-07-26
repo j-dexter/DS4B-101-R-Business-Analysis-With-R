@@ -1,0 +1,98 @@
+# DS4B 101-R: R FOR BUSINESS ANALYSIS ----
+# CUSTOMER SEGMENTATION ----
+
+
+library(tidyverse)
+library(broom)
+library(umap)
+library(ggrepel)
+library(tidyquant)
+
+bike_orderlines_tbl <- read_rds("00_data/bike_sales/data_wrangled/bike_orderlines.rds")
+
+glimpse(bike_orderlines_tbl)
+
+
+# 1.0 CUSTOMER TRENDS ----
+# - GOAL: Mine Customer Purchase History for similarity to other "like" customers
+# - TECHNIQUES: K-Means Clustering, UMAP 2D Projection
+
+# 1.1 Get Customer Trends ----
+
+#* To get trends, we need to get the VERY granular/detailed data into 
+    # it's aggregated form so that we can see trends.
+    # k-means needs less-granular data in order to pick up trends.
+
+#* protip: aggregating purchasing trends to cusotmers & products is 
+    # typically the way to go.
+
+#* protip: when understanding customer trends, it's important to collect:
+    # 1) the unique customer name
+    # 2) attributes related to the product
+    # 3) a value to measure e.g. quantity or total price
+
+#* protip: we convert to customer trends by:
+    # 1) aggregating w/in customer-product groups, then
+    # 2) normalizing w/in customer groups to get percentages of
+            # product purchases by customer.
+
+#* we are trying to get an 'essence' of what the customer likes
+
+customer_trends_tbl <- bike_orderlines_tbl %>% 
+    
+    select(bikeshop_name, price, model, category_1, category_2, frame_material, quantity) %>% 
+    
+    # Group by and summarizations
+    #* 1) aggregating w/in customer-product groups
+    group_by(bikeshop_name, price, model, category_1, category_2, frame_material) %>% 
+    summarize(quantity_purchased = sum(quantity)) %>% 
+    ungroup() %>% 
+    
+    # Get Proportions to Standardize (for comparison purposes)
+    # 2) normalizing data w/in customer groups to get percentages of
+            # product purchases by customer (proportions help kmeans).
+            # proportions allow kmeans to compare customers side-by-side.
+    group_by(bikeshop_name) %>% 
+    mutate(prop_of_total = quantity_purchased / sum(quantity_purchased)) %>% 
+    ungroup()
+
+customer_trends_tbl
+
+# 1.2 Convert to User-Item Format (e.g. Customer-Product) ----
+
+
+
+# 2.0 MODELING: K-MEANS CLUSTERING ----
+
+# 2.1 Performing K-Means ----
+
+
+# 2.2 Tidying a K-Means Object ----
+
+
+# 2.3 How many centers (customer groups) to use? ----
+ 
+
+# 2.4 Skree Plot ----
+
+
+
+
+# 3.0 VISUALIZATION: UMAP ----
+
+# 3.1 Use UMAP to get 2-D Projection ----
+
+
+# 3.2 Use K-Means to Add Cluster Assignments ----
+
+
+# 3.3 Visualize UMAP'ed Projections with Cluster Assignments ----
+
+
+
+
+# 4.0 ANALYZE PURCHASING TRENDS ----
+
+
+
+
