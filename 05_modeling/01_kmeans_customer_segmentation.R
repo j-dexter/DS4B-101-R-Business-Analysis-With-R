@@ -58,25 +58,88 @@ customer_trends_tbl <- bike_orderlines_tbl %>%
 
 customer_trends_tbl
 
+
 # 1.2 Convert to User-Item Format (e.g. Customer-Product) ----
 
+customer_product_tbl <- customer_trends_tbl %>% 
+    
+    select(bikeshop_name, model, prop_of_total) %>% 
+    spread(key = model, value = prop_of_total, fill = 0)
+
+customer_product_tbl
 
 
 # 2.0 MODELING: K-MEANS CLUSTERING ----
 
 # 2.1 Performing K-Means ----
+?kmeans
 
+#* nstart: k-means picks a random starting point and then iteratively finds
+    # the best location for the centers. choosing nstart > 1 ensures
+    # higher likelihood that a good center is found.
+    # basically it gives a better solution.
+
+kmeans_obj <- customer_product_tbl %>% 
+    select(-bikeshop_name) %>% 
+    kmeans(centers = 5, nstart = 100)
+
+kmeans_obj$centers
+kmeans_obj$cluster
 
 # 2.2 Tidying a K-Means Object ----
 
+broom::tidy(kmeans_obj) %>% glimpse()
+
+broom::glance(kmeans_obj)
+
+broom::augment(kmeans_obj, customer_product_tbl) %>% 
+    select(bikeshop_name, .cluster) %>% 
+    arrange(.cluster)
 
 # 2.3 How many centers (customer groups) to use? ----
- 
+
+# Function that works on 1 element
+centers <- 3
+
+kmeans_mapper <- function(centers = 3) {
+    
+    customer_product_tbl %>% 
+        select(-bikeshop_name) %>% 
+        kmeans(centers = centers, nstart = 100)
+}
+
+3 %>% kmeans_mapper() %>% glance()
+
+#* protip: we can apply broom:glance() row-wise with mutate() + map()
+
+# Mapping the function to many elements
+kmeans_mapped_tbl <- tibble(centers = 1:15) %>% 
+    mutate(k_means = centers %>% map(kmeans_mapper)) %>% 
+    mutate(glance  = k_means %>% map(glance))
+
+kmeans_mapped_tbl %>% 
+    unnest(glance) %>% 
+    select(centers, tot.withinss)
 
 # 2.4 Skree Plot ----
 
-
-
+kmeans_mapped_tbl %>% 
+    unnest(glance) %>% 
+    select(centers, tot.withinss) %>% 
+    
+    # Visualization
+    ggplot(aes(centers, tot.withinss)) +
+    geom_point(color = "#2c3e50", size = 3) +
+    geom_line(color = "#2c3e50", size = 1) +
+    ggrepel::geom_label_repel(aes(label = centers), color = "#2c3e50") +
+    
+    # Formatting
+    theme_tq() +
+    labs(
+        title = "Skree Plot",
+        subtitle = "Measures the distance each of the customers are from the closest K-Means center",
+        caption = "Based on the Scree Plot, we select 4 clusters to segment the customer base."
+    )
 
 # 3.0 VISUALIZATION: UMAP ----
 
