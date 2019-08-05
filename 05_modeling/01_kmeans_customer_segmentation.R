@@ -194,12 +194,11 @@ umap_kmeans_4_results_tbl %>%
     # Formatting
     theme_tq() +
     scale_color_tq() +
-    labs(
-        title = "Customer Segmentation: 2D Projection",
-        subtitle = "UMAP 2D Projection with K-Means Cluster Assignment",
-        caption = "Conclusion: 4 Customer Segments identified using 2 algorithms"
-    ) +
-    theme(legend.position = "none")
+    theme(legend.position = "none") +
+    labs(title    = "Customer Segmentation: 2D Projection",
+         subtitle = "UMAP 2D Projection with K-Means Cluster Assignment",
+         caption  = "Conclusion: 4 Customer Segments identified using 2 algorithms")
+
     
 
 # 4.0 ANALYZE PURCHASING TRENDS ----
@@ -210,7 +209,102 @@ umap_kmeans_4_results_tbl %>%
 
 # Next Step: Related Clusters to Products
 
+#* study prices and determine bins
 customer_trends_tbl %>% 
+    pull(price) %>% 
+    quantile(probs = c(0, 0.33, 0.66, 1))
+
+?quantile
+
+cluster_trends_tbl <- customer_trends_tbl %>% 
     
     # Join Cluster Assignment by Bikeshop Name
-    left_join(umap_kmeans_4_results_tbl)
+    left_join(umap_kmeans_4_results_tbl) %>% 
+    
+    mutate(price_bin = case_when(
+        price <= 2240 ~ "low",
+        price <= 4260 ~ "medium",
+        TRUE ~ "high"
+    )) %>%
+    
+    select(.cluster, model, contains("price"), category_1:quantity_purchased) %>% 
+    
+    # Aggregate quantity purchased by cluster and product attributes
+    group_by_at(.vars = vars(.cluster:frame_material)) %>% 
+    summarize(total_quantity = sum(quantity_purchased)) %>% 
+    ungroup() %>% 
+    
+    # Normalize data by Calculating Proportion of Total
+    group_by(.cluster) %>% 
+    mutate(prop_of_total = total_quantity / sum(total_quantity)) %>% 
+    ungroup()
+
+cluster_trends_tbl
+
+
+#* ASSESS TRENDS TO SHOW MARKETING THE PREFERENCES BY CLUSTER
+    # just trying to get a sense of any trends that jump out
+
+# Cluster 1 - Low/Medium Price, Road, Aluminum Frame
+cluster_trends_tbl %>% 
+    filter(.cluster == 1) %>% 
+    arrange(desc(prop_of_total)) %>% 
+    mutate(cum_prop = cumsum(prop_of_total)) %>% View()
+
+get_cluster_trends <- function(cluster = 1) {
+    
+    cluster_trends_tbl %>% 
+        filter(.cluster == cluster) %>% 
+        arrange(desc(prop_of_total)) %>% 
+        mutate(cum_prop = cumsum(prop_of_total)) 
+}
+
+# test function
+get_cluster_trends(cluster = 1)
+
+# Cluster 2 - High End Price, Road, Carbon Frame
+get_cluster_trends(cluster = 2) 
+
+# Cluster 3 - Low/Medium Price, Mountain, Aluminum Frame
+get_cluster_trends(cluster = 3) 
+
+# Cluster 4 - High End price, Mountain, Carbon Frame
+get_cluster_trends(cluster = 4) 
+
+
+# Update Visualization 
+
+cluster_label_tbl <- tibble(
+    .cluster = 1:4,
+    .cluster_label = c(
+        "Low/Medium Price, Road, Aluminum Frame",
+        "High End Price, Road, Carbon Frame",
+        "Low/Medium Price, Mountain, Aluminum Frame",
+        "High End price, Mountain, Carbon Frame"
+    )) %>% 
+    mutate(.cluster = as_factor(.cluster))
+
+cluster_label_tbl
+
+# Join descriptions + visualize
+
+umap_kmeans_4_results_tbl %>% 
+    left_join(cluster_label_tbl) %>% 
+    mutate(label_text = str_glue("Customer: {bikeshop_name}
+                                 Cluster: {.cluster}
+                                 {.cluster_label}")) %>% 
+    ggplot(aes(x, y, color = .cluster)) +
+    
+    # Geometries
+    geom_point() +
+    geom_label_repel(aes(label = label_text), size = 2.5) +
+    
+    # Formatting
+    theme_tq() +
+    scale_color_tq() +
+    theme(legend.position = "none") +
+    labs(title    = "Customer Segmentation: 2D Projection",
+         subtitle = "UMAP 2D Projection with K-Means Cluster Assignment",
+         caption  = "Conclusion: 4 Customer Segments identified using 2 algorithms")
+
+
