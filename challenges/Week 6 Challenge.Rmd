@@ -414,7 +414,8 @@ umap_kmeans_results_tbl %>%
   
   geom_point(alpha = 0.5) +
   
-  theme_tq()
+  theme_tq() +
+    scale_color_tq()
 
 ```
 
