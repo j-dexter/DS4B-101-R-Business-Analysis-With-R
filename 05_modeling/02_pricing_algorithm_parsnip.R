@@ -111,13 +111,17 @@ test_tbl  <- split_obj %>% testing()
 
 # 3.0 LINEAR METHODS ----
 ?linear_reg
+?set_engine
+?fit
 
 
 # 3.1 LINEAR REGRESSION - NO ENGINEERED FEATURES ----
 
 # 3.1.1 Model ----
 
-
+model_01_linear_lm_simple <- linear_reg(mode = "regression") %>% 
+    set_engine("lm") %>% 
+    fit(price ~ category_2 + frame_material, train_tbl)
 
 # 3.1.2 Feature Importance ----
 
