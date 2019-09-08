@@ -113,31 +113,156 @@ test_tbl  <- split_obj %>% testing()
 ?linear_reg
 ?set_engine
 ?fit
-
+?predict.model_fit()
+?metrics
 
 # 3.1 LINEAR REGRESSION - NO ENGINEERED FEATURES ----
 
 # 3.1.1 Model ----
 
+# Three Step Process
+
+# 1 Create a model: linear_reg()
 model_01_linear_lm_simple <- linear_reg(mode = "regression") %>% 
+    
+    # 2 Set an engine
     set_engine("lm") %>% 
+    
+    # 3 Fit the model to data
     fit(price ~ category_2 + frame_material, train_tbl)
 
-# 3.1.2 Feature Importance ----
 
+#* MODEL METRICS: We calculate model metrics comparing the test
+    # data predicitons with the actual values to get a 
+    # baseline model performance.
+
+
+# NOW LETS ANSWER: How different are the actual/predictions (on average)
+    # 1) Mean Absolute Error (MAE): Absolute value of residuals
+            # generates the magnitude of error.
+            # take the average to get the avg. error.
+    # 2) Root Mean Squared Error (RMSE): Square the residuals to remove
+            # negative sign. Take the average.
+            # take the square root of the avg. to return to units
+                # of initial error term.
+
+# use model to make predicitons on test-data (long form method)
+model_01_linear_lm_simple %>% 
+    
+    # get predicitons
+    predict(new_data = test_tbl) %>% 
+    
+    # add column with actual price-values
+    bind_cols(test_tbl %>% select(price)) %>% 
+    
+    # get residuals: diff between actual (truth) and
+    # prediciton (estimate from the model)
+    mutate(residuals = price - .pred) %>% 
+    
+    # calculate MAE
+    summarize(
+        mae  = abs(residuals) %>% mean(),
+        rmae = mean(residuals^2)^0.5 # squares, takes average, then converts back
+    )
+
+
+# use model to make predicitons on test-data (short-form w/yardstick)
+model_01_linear_lm_simple %>% 
+    
+    # get predicitons
+    predict(new_data = test_tbl) %>% 
+    
+    # add column with actual price-values
+    bind_cols(test_tbl %>% select(price)) %>% 
+    
+    yardstick::metrics(truth = price, estimate = .pred)
+
+
+# 3.1.2 Feature Importance ----
+model_01_linear_lm_simple
+
+model_01_linear_lm_simple$fit %>% class()
+
+model_01_linear_lm_simple$fit %>% 
+    broom::tidy() %>% 
+    
+    # arrange by importance using p-values
+    arrange(p.value) %>% 
+    mutate(term = as_factor(term) %>% fct_rev()) %>% 
+    
+    # plot feature importance
+    ggplot(aes(x = estimate, y = term)) +
+    geom_point(size = 3) +
+    ggrepel::geom_label_repel(aes(label = scales::dollar(estimate, accuracy = 1)),
+                              size = 4) +
+    scale_x_continuous(labels = scales::dollar_format()) +
+    labs(title = "Linear Regression: Feature Importance",
+         subtitle = "Model 01: Simple lm model") +
+    theme_tq()
+    
 
 # 3.1.3 Function to Calculate Metrics ----
 
+#* here we are creating a funciton to recreate section 3.1.1
+
+model_01_linear_lm_simple %>% 
+    # get predicitons
+    predict(new_data = test_tbl) %>%
+    # add column with actual price-values
+    bind_cols(test_tbl %>% select(price)) %>% 
+    yardstick::metrics(truth = price, estimate = .pred) 
+
+
+#* Function to expedite the Metrics we will be Calculating
+    # these are the metrics for evaluating ML methods
+    # used to fit data and how the compare to each other.
+calc_metrics <- function(model, new_data = test_tbl){
+    
+    model %>% 
+        # get predicitons
+        predict(new_data = new_data) %>%
+        # add column with actual price-values
+        bind_cols(new_data %>% select(price)) %>% 
+        yardstick::metrics(truth = price, estimate = .pred)
+}
+
+model_01_linear_lm_simple %>% calc_metrics(test_tbl)
+model_01_linear_lm_simple %>% calc_metrics(train_tbl)
 
 
 # 3.2 LINEAR REGRESSION - WITH ENGINEERED FEATURES ----
 
-# 3.2.1 Model ----
+#* Can we reduce our model metrcis: RMSE +/or MAE
 
+# 3.2.1 Model ----
+train_tbl
+
+# fit model: price ~ . (the dot tells parsnip to fit a model as a
+    # funciton of all the predictor columns)
+model_02_linear_complex <- linear_reg("regression") %>% 
+    set_engine("lm") %>% 
+    fit(price ~ ., data = train_tbl %>% select(-id, -model, -model_tier))
+
+model_02_linear_complex %>% calc_metrics(new_data = test_tbl)
 
 # 3.2.2 Feature importance ----
 
-
+model_02_linear_complex$fit %>% 
+    broom::tidy() %>% 
+    
+    # arrange by importance using p-values
+    arrange(p.value) %>% 
+    mutate(term = as_factor(term) %>% fct_rev()) %>% 
+    
+    # plot feature importance
+    ggplot(aes(x = estimate, y = term)) +
+    geom_point(size = 3) +
+    ggrepel::geom_label_repel(aes(label = scales::dollar(estimate, accuracy = 1)),
+                              size = 4) +
+    scale_x_continuous(labels = scales::dollar_format()) +
+    labs(title = "Linear Regression: Feature Importance",
+         subtitle = "Model 02: Complex lm model") +
+    theme_tq()
 
 # 3.3 PENALIZED REGRESSION ----
 
@@ -145,15 +270,51 @@ model_01_linear_lm_simple <- linear_reg(mode = "regression") %>%
 ?linear_reg
 ?glmnet::glmnet
 
+model_03_linear_glmnet <- linear_reg(mode = "regression", penalty = 100, mixture = 0.25) %>% 
+    set_engine("glmnet") %>% 
+    fit(price ~ ., data = train_tbl %>% select(-id, -model, -model_tier))
 
-
+model_03_linear_glmnet %>% calc_metrics(test_tbl)
 
 # 3.3.2 Feature Importance ----
 
+#* the estimate col is the important one for looking at
+    # feature importance. Like regular linear regression,
+    # these values in 'estiamte' are interpretable.
 
+model_03_linear_glmnet$fit %>% 
+    # arrange by estimate (instead of using p-values)
+    broom::tidy() %>% 
+    filter(lambda >= 10 & lambda < 11) %>% 
+    arrange(desc(abs(estimate))) %>% 
+    mutate(term = as_factor(term) %>% fct_rev()) %>% 
+    
+    # plot feature importance
+    ggplot(aes(x = estimate, y = term)) +
+    geom_point(size = 3) +
+    ggrepel::geom_label_repel(aes(label = scales::dollar(estimate, accuracy = 1)),
+                              size = 3) +
+    scale_x_continuous(labels = scales::dollar_format()) +
+    labs(title = "Linear Regression: Feature Importance",
+         subtitle = "Model 03: GLMNET lm model") +
+    theme_tq()
 
 
 # 4.0 TREE-BASED METHODS ----
+
+#* SOME QUICK NOTES ON TREE-BASED METHODS
+    # 1) Naturally incorporate non-linear relationships/interactions
+    # 2) Minimal preprocessing required (no standardization, etc.)
+    # 3) downside: while decision trees are VERY explainable,
+            # Random Forest & XGBoost has low explainability.
+    # 4) Random Forest & XGBoost (we can still get feature importance)
+            # Pro: High Performance
+            # Con: Less Explainability
+
+
+# Tree-Based Methods
+    # Just start with a Question:
+        # e.g., 
 
 # 4.1 DECISION TREES ----
 
@@ -161,14 +322,16 @@ model_01_linear_lm_simple <- linear_reg(mode = "regression") %>%
 ?decision_tree
 ?rpart::rpart
 
+model_04_decision_tree <- decision_tree(mode = "regression", 
+                                        cost_complexity = 0.001, 
+                                        tree_depth      = 7, 
+                                        min_n           = 10) %>% 
+    set_engine("rpart") %>% 
+    fit(price ~ ., data = train_tbl %>% select(-id, -model, -model_tier))
 
+model_04_decision_tree %>% calc_metrics(test_tbl)
 
 # 4.1.2 Decision Tree Plot ----
-
-
-
-
-
 
 
 # 4.2 RANDOM FOREST ----
@@ -177,22 +340,53 @@ model_01_linear_lm_simple <- linear_reg(mode = "regression") %>%
 ?rand_forest()
 ?ranger::ranger
 
+set.seed(1234)
+model_05_rand_forest_ranger <- rand_forest(
+    mode = "regression", mtry = 8, trees = 2000, min_n = 20) %>% 
+    set_engine("ranger", replace = T, splitrule = "extratrees", importance = "impurity") %>% 
+    fit(price ~ ., data = train_tbl %>% select(-id, -model, -model_tier))
 
+model_05_rand_forest_ranger %>% calc_metrics(test_tbl)
 
 # 4.2.2 ranger: Feature Importance ----
 
+#* We cannot put dollar values to explain what value an important
+    # feature has, but we can still get importance (and great accuracy)
 
-
+model_05_rand_forest_ranger$fit %>% 
+    ranger::importance() %>% 
+    enframe() %>% 
+    arrange(desc(value)) %>% 
+    mutate(name = as_factor(name) %>% fct_rev()) %>% 
+    
+    ggplot(aes(value, name)) +
+    geom_point() +
+    labs(title = "ranger: Variable Importance",
+         subtitle = "Model 05: Ranger Forest Model")
 
 # 4.2.3 Model randomForest ----
 ?rand_forest()
 ?randomForest::randomForest
 
+set.seed(1234)
+model_06_rand_forest_randomForest <- rand_forest("regression") %>% 
+    set_engine("randomForest") %>% 
+    fit(price ~ ., data = train_tbl %>% select(-id, -model, -model_tier))
 
+model_06_rand_forest_randomForest %>% calc_metrics(test_tbl)
 
 # 4.2.4 randomForest: Feature Importance ----
 
-
+model_06_rand_forest_randomForest$fit %>% 
+    randomForest::importance() %>% 
+    as_tibble(rownames = "name") %>% 
+    arrange(desc(IncNodePurity)) %>% 
+    mutate(name = as_factor(name) %>% fct_rev()) %>% 
+    
+    ggplot(aes(IncNodePurity, name)) +
+    geom_point() +
+    labs(title = "randomForest: Variable Importance",
+         subtitle = "Model 06: Random Forest Model")
 
 
 # 4.3 XGBOOST ----
@@ -201,7 +395,14 @@ model_01_linear_lm_simple <- linear_reg(mode = "regression") %>%
 ?boost_tree
 ?xgboost::xgboost
 
+set.seed(1234)
+model_07_boost_tree_xgboost <- boost_tree(
+    mode = "regression",
+    learn_rate = 0.2) %>% 
+    set_engine("xgboost") %>% 
+    fit(price ~ ., data = train_tbl %>% select(-id, -model, -model_tier))
 
+model_07_boost_tree_xgboost %>% calc_metrics(test_tbl)
 
 # 4.3.2 Feature Importance ----
 
