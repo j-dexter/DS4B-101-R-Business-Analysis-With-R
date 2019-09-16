@@ -1,0 +1,239 @@
+---
+# HIGH-LEVEL SETTINGS FOR DOCUMENT ITSELF
+title: "Communication with RMarkdown"
+author: "Business Science"
+date: "3/14/2019"
+output:
+  html_document:
+    code_folding: none
+    df_print: paged
+    highlight: tango
+    number_sections: yes
+    theme: flatly
+    toc: yes
+    toc_depth: 2
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+---
+
+```{r setup, include=FALSE}
+# GLOBAL SETTINGS FOR CONTROLLING MY DOCUMENT (CODE DISPLAY, MESSAGE DISPLAY, ETC)
+# MATT uses these ones the most
+# This set globally but each can be controlled within each seperate code chunk
+knitr::opts_chunk$set(
+    echo = FALSE,
+    eval = TRUE,
+    message = FALSE,
+    warning = FALSE,
+    dpi = 300,
+    fig.align = "center"
+    )
+
+# See Options: knitr::opts_chunk$get()
+```
+
+
+```{r, echo=FALSE}
+
+# eval = FALSE (Show code, but don't run, no output)
+# echo = FALSE (Don't show code, but run, show output)
+# results = "hide" (Show code, and run, but don't show output) / fig.keep (suppresses figure output)
+
+# Load Libraries
+library(tidyverse)
+library(tidyquant)
+library(plotly)
+```
+
+# RMarkdown
+
+> Is amazing.
+
+## What can RMarkdown be used for?
+
+1. [HTML Reports](https://bookdown.org/yihui/rmarkdown/html-document.html) & [PDF Reports](https://bookdown.org/yihui/rmarkdown/pdf-document.html)
+2. [HTML Slide Decks](https://bookdown.org/yihui/rmarkdown/ioslides-presentation.html) & [PowerPoint](https://bookdown.org/yihui/rmarkdown/powerpoint-presentation.html)
+3. [Interactive Dashboards](https://rmarkdown.rstudio.com/flexdashboard/index.html)
+4. [Books with `bookdown`](https://bookdown.org/)
+5. [Websites with `blogdown`](https://bookdown.org/yihui/blogdown/)
+
+## Key Resources
+
+- [RMarkdown Website with Gallery](https://rmarkdown.rstudio.com/index.html)
+
+- Key Reference: [RMarkdown - The Definitive Guide](https://bookdown.org/yihui/rmarkdown/)
+
+- PDF Printing Setup: [tinytex](https://yihui.name/tinytex/)
+
+```{r}
+# PDF Knitting Setup: https://yihui.name/tinytex/ 
+# install.packages("tinytex")
+# tinytex::install_tinytex()
+```
+
+
+# How Rmarkdown Works
+
+# Header 1
+
+## Header 2
+
+### Header 3
+
+# Working with Text
+
+Free-form text.
+
+Make text __bold__.
+
+Make text _italics_.
+
+Make text ___bold + italics___.
+
+Talk about code - the `tidyverse` is awesome
+
+__Unordered List:__
+
+- Item 1
+
+- Item 2
+
+__Ordered List:__
+
+1. First point
+
+2. Second point
+
+3. More points
+
+
+
+# Tabset {.tabset .tabset-fade .tabset-pills}
+
+## Tab 1
+
+This is Tab 1
+
+## Tab 2
+
+This is Tab 2
+
+
+# Images
+
+![Business Science Logo](img/business-science-logo.png){width=100px}
+
+```{r, out.width="100px", echo=FALSE, fig.cap="Business Science Logo"}
+knitr::include_graphics("img/business-science-logo.png")
+```
+
+
+# Code 
+
+Read in data and print to HTML. Notice effect of `df_print: paged` option for HTML. 
+
+- Try changing to `df_print: default`, or `kable` or `tibble`. PDF prints normally.
+
+- Try changing `results = "hide"`.
+
+```{r}
+bike_orderlines_tbl <- read_rds(path = "../00_data/bike_sales/data_wrangled/bike_orderlines.rds")
+
+bike_orderlines_tbl
+```
+
+We can do data manipulations too. Try changing the YAML `code_folding` option from `none` to `hide` to `show`.
+
+```{r}
+revenue_by_category_tbl <- bike_orderlines_tbl %>%
+  select(category_2, category_1, total_price) %>%
+  
+  group_by(category_2, category_1) %>%
+  summarise(total_revenue = sum(total_price)) %>%
+  ungroup() %>%
+  
+  arrange(desc(total_revenue)) %>%
+  mutate(category_2 = as_factor(category_2) %>% fct_rev())
+  
+```
+
+
+# Plots
+
+Plotting works as expected. Try changin:
+
+- `out.height`, `out.width` and Knitting
+
+- Potential gotcha - Interactive plots (e.g. `plotly`) will not display in PDF
+
+__Static Plots:__ 
+
+- Use `ggplot2`.
+
+```{r, fig.cap="Revenue by Category", out.height="600px"}
+g <- revenue_by_category_tbl %>%
+  ggplot(aes(category_2, total_revenue, fill = category_1)) +
+  
+  # Geoms
+  geom_col() +
+  coord_flip() +
+  
+  # Formatting
+  scale_fill_tq() +
+  scale_y_continuous(labels = scales::dollar_format(scale = 1e-6, suffix = "M")) +
+  theme_tq() +
+  labs(
+    title = "Total Revenue by Category",
+    x = "", y = "", fill = ""
+  )
+
+g
+  
+```
+
+__Interactive plots:__ 
+
+- Use `ggplotly()`.
+
+```{r, out.height="500px", out.width="100%"}
+#ggplotly(g)
+```
+
+
+# Tables
+
+__Static Tables:__
+
+- `knitr` package - `knitr::kable()` - Simple to use, great with PDF
+- [`gt` package](https://gt.rstudio.com/) - Not on CRAN yet, but really good for static tables
+
+```{r, fig.cap="Top Bike Categories"}
+table_formatted_tbl <- revenue_by_category_tbl %>%
+  mutate(total_revenue = scales::dollar(total_revenue)) %>%
+  rename_all(.funs = ~ str_replace(., "_", " ") %>%
+               str_to_title()) 
+
+table_formatted_tbl %>% knitr::kable()
+```
+
+__Dynamic Tables:__
+
+- Can print tables without additional formatting in HTML with the `df_print: paged` option in YAML
+- Potential Gotcha: Note that this will not print with format in PDF
+
+```{r}
+table_formatted_tbl
+```
+
+
+
+# Footnotes
+
+This is some text with a Footnote[^1]. This is a second Footnote[^2].
+
+
+
+[^1]: Citation for Footnote 1
+
+[^2]: Citatin for Footnote 2
