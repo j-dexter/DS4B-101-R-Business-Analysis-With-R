@@ -1,0 +1,80 @@
+---
+title: "Customer Segmentation"
+author: "Business Science"
+date: "3/19/2019"
+output:
+  html_document:
+    df_print: paged
+    theme: flatly
+  pdf_document: default
+params:
+  interactive: TRUE
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+    echo = FALSE,
+    message = FALSE,
+    warning = FALSE,
+    out.width = "100%",
+    fig.align = "center")
+```
+
+```{r}
+library(tidyverse)
+library(tidyquant)
+library(broom)
+library(umap)
+library(ggrepel)
+library(plotly)
+```
+
+```{r}
+bike_orderlines_tbl <- read_rds("../00_data/bike_sales/data_wrangled/bike_orderlines.rds")
+```
+
+```{r}
+# source("../00_scripts/plot_customer_segmentation.R")
+```
+
+
+## Problem Statement
+
+Marketing would like to increase email campaign engagement by segmenting the customer-base using their buying habbits. 
+
+## Solution Summary
+
+__TODO: INSERT ANALYSIS AND HEAT MAP__
+
+
+## Customer Preferences
+
+### Heat Map
+
+__TODO: INSERT ANALYSIS AND HEAT MAP__
+
+```{r, fig.height=12}
+# PLOT CUSTOMER HEAT MAP
+
+```
+
+### Customer Segmentation
+
+__TODO: INSERT ANALYSIS AND HEAT MAP__
+
+```{r, fig.height=5, fig.width=7}
+# PLOT CUSTOMER SEGMENTS
+
+```
+
+
+### Customer Preferences By Segment
+
+__TODO: INSERT ANALYSIS AND HEAT MAP__
+
+```{r, fig.height=8}
+# PLOT CUSTOMER BEHAVIOR
+
+```
+

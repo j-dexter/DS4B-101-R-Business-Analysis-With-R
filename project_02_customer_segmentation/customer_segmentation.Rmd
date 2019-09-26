@@ -1,0 +1,96 @@
+---
+title: "Customer Segmentation"
+author: "Business Science"
+date: "3/19/2019"
+output:
+  html_document:
+    df_print: paged
+    theme: flatly
+  pdf_document: default
+params:
+  interactive: TRUE
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+    echo = FALSE,
+    message = FALSE,
+    warning = FALSE,
+    out.width = "100%",
+    fig.align = "center")
+```
+
+```{r}
+library(tidyverse)
+library(tidyquant)
+library(broom)
+library(umap)
+library(ggrepel)
+library(plotly)
+```
+
+```{r}
+bike_orderlines_tbl <- read_rds("../00_data/bike_sales/data_wrangled/bike_orderlines.rds")
+```
+
+```{r}
+source("../00_scripts/plot_customer_segmentation.R")
+```
+
+
+## Problem Statement
+
+Marketing would like to increase email campaign engagement by segmenting the customer-base using their buying habbits. 
+
+## Solution Summary
+
+The data science team has identified 4 customer segments. The 4 customer segments were given descriptions based on the customer's top product purchases. 
+
+1. __Segment 1 Preferences:__ Road Bikes, Below $3200 (Economical Models)
+
+2. __Segment 2 Preferences:__ Mountain Bikes, Above $3200 (Premium Models)
+
+3. __Segment 3 Preferences:__ Road Bikes, Above $3200 (Premium Models)
+
+4. __Segment 4 Preferences:__ Both Road and Mountain, Below $3200 (Economical Models)
+
+
+## Customer Preferences
+
+### Heat Map
+
+Our customer-base consists of 30 bike shops. Several customers have purchasing preferences for Road or Mountain Bikes based on the proportion of bikes purchased by category_1 and category_2.
+
+```{r, fig.height=12}
+# PLOT CUSTOMER HEAT MAP
+plot_customer_heatmap(interactive = params$interactive)
+```
+
+### Customer Segmentation
+
+This is a 2D Projection based on customer similarity that exposes 4 clusters, which are key segments in the customer base. 
+
+```{r, fig.height=5, fig.width=7}
+# PLOT CUSTOMER SEGMENTS
+plot_customer_segments(k = 4, seed = 123, interactive = params$interactive)
+```
+
+
+### Customer Preferences By Segment
+
+The 4 customer segments were given descriptions based on the customer's top product purchases. 
+
+1. __Segment 1 Preferences:__ Road Bikes, Below $3200 (Economical Models)
+
+2. __Segment 2 Preferences:__ Mountain Bikes, Above $3200 (Premium Models)
+
+3. __Segment 3 Preferences:__ Road Bikes, Above $3200 (Premium Models)
+
+4. __Segment 4 Preferences:__ Both Road and Mountain, Below $3200 (Economical Models)
+
+```{r, fig.height=8}
+# PLOT CUSTOMER BEHAVIOR
+plot_customer_behavior_by_cluster(top_n_products = 5, k = 4, seed = 123, interactive = params$interactive)
+```
+

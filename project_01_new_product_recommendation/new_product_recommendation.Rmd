@@ -1,0 +1,120 @@
+---
+title: "Product Pricing Algorithm"
+author: "Business Science"
+date: "3/19/2019"
+output:
+  html_document:
+    df_print: paged
+    theme: flatly
+  pdf_document: default
+params:
+  interactive: FALSE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+    echo = FALSE,
+    message = FALSE,
+    warning = FALSE,
+    out.width = "100%")
+```
+
+```{r}
+library(tidyverse)
+library(tidyquant)
+library(parsnip)
+library(plotly)
+```
+
+```{r}
+# source("../00_scripts/separate_bikes_and_outlier_detection.R")
+# source("../00_scripts/plot_product_recommendation.R")
+```
+
+```{r}
+bike_orderlines_tbl <- read_rds("../00_data/bike_sales/data_wrangled/bike_orderlines.rds")
+```
+
+```{r}
+models_tbl <- read_rds("../00_models/parsnip_models_tbl.rds")
+```
+
+## Problem Statement
+
+Research and Development wants help to determine new product ideas and pricing using existing product line as a benchmark.
+
+## Solution Summary
+
+__TODO: INSERT SOLUTION SUMMARY__
+
+
+## Gap Analysis
+
+### Bike List
+
+__TODO: INSERT BIKE LIST__
+
+```{r}
+
+```
+
+### Gaps
+
+__TODO: INSERT GAP ANALYSIS SUMMARY AND VISUALIZATION__
+
+```{r, out.height="600px"}
+
+```
+
+\newpage
+## Price Prediction
+
+__TODO: INSERT PRICE PREDICTION SUMMARY AND TABLE__
+
+```{r}
+# CREATE NEW MODELS
+new_over_mountain_trigger <- tibble(
+    model = "Trigger Al 1",
+    frame_material = "Aluminum",
+    category_2 = "Over Mountain",
+    model_base = "Trigger",
+    model_tier = "Aluminum 1",
+    black      = 0,
+    hi_mod     = 0,
+    team       = 0,
+    red        = 0,
+    ultegra    = 0,
+    dura_ace   = 0,
+    disc       = 0
+) 
+
+new_triathalon_slice_tbl <- tibble(
+    model = "Slice Al 1",
+    frame_material = "Aluminum",
+    category_2 = "Triathalon",
+    model_base = "Slice",
+    model_tier = "Ultegra",
+    black      = 0,
+    hi_mod     = 0,
+    team       = 0,
+    red        = 0,
+    ultegra    = 0,
+    dura_ace   = 0,
+    disc       = 0
+) 
+
+new_bikes_tbl <- bind_rows(new_over_mountain_trigger, 
+                           new_triathalon_slice_tbl)
+```
+
+```{r}
+# GET XGBOOST MODEL
+
+```
+
+```{r}
+# OUTPUT PREDICTIONS IN A TABLE
+
+```
+
+
